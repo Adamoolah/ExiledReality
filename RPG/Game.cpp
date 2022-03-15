@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "GameState.h"
 
 //STATIC FUNCS
 
@@ -6,7 +7,28 @@
 void Game::initWindow()
 {
 	//TODO: CREATE THE WINDOW WITH A "WINDOW.INI" FILE
-	this ->window = new sf::RenderWindow(sf::VideoMode(200, 200), "Exiled Reality");
+	std::ifstream ifs("Config/window.ini");
+	sf::VideoMode window_bounds(800, 600);
+	std::string title = "None";
+	unsigned framerate_limit = 120;
+	bool vertical_sync_enabled = false;
+
+	if (ifs.is_open()) {
+		std::getline(ifs, title);
+		ifs >> window_bounds.width >> window_bounds.height;
+		ifs >> framerate_limit;
+		ifs >> vertical_sync_enabled;
+	}
+
+	ifs.close();
+	this ->window = new sf::RenderWindow(window_bounds, title);
+	this->window->setFramerateLimit(framerate_limit);
+	this->window->setVerticalSyncEnabled(vertical_sync_enabled);
+}
+
+void Game::initStates()
+{
+	this->states.push(new GameState(this->window));
 }
 
 //CONSTRUCTERS/DESTRUCTERS
@@ -14,11 +36,17 @@ void Game::initWindow()
 Game::Game()
 {
 	this->initWindow();
+	this->initStates();
 }
 
 Game::~Game()
 {
 	delete this->window;
+
+	while (!this->states.empty()) {
+		delete this->states.top();
+		this->states.pop();
+	}
 }
 
 //Funcs
@@ -34,6 +62,9 @@ void Game::UpdateSFMLEvents()
 void Game::update()
 {
 	this->UpdateSFMLEvents();
+
+	if (!this->states.empty())
+		this->states.top()->update(this->dt);
 }
 
 void Game::render()
@@ -41,6 +72,8 @@ void Game::render()
 	this->window->clear();
 
 	//Render Items
+	if (!this->states.empty())
+		this->states.top()->render();
 
 	this->window->display();
 }
@@ -60,6 +93,4 @@ void Game::updateDT()
 {
 	this->dt = this->dtClock.restart().asSeconds(); // Updates the "dt" variable with the time it takes to render and update one frame
 
-	system("cls");
-	std::cout << this->dt << "\n"; 
 }
