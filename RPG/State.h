@@ -21,13 +21,18 @@ class State
 private:
 	sf::RenderWindow* window;
 	std::vector<sf::Texture> textures;
+
+	bool quit = false;
 public:
 	State(sf::RenderWindow* window);
 	virtual ~State();
 
-	virtual void update(const float& dt);
-	virtual void render(sf::RenderTarget* target = nullptr) = 0;
+	const bool& getQuit() const;
 
+	virtual void update(const float& dt) = 0;
+	virtual void render(sf::RenderTarget* target = nullptr) = 0;
+	virtual void updateKeyBinds(const float& dt) = 0;
+	virtual void checkForQuit();
 	virtual void endState() = 0;
 };
 

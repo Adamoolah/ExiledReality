@@ -63,8 +63,20 @@ void Game::update()
 {
 	this->UpdateSFMLEvents();
 
-	if (!this->states.empty())
+	if (!this->states.empty()) {
 		this->states.top()->update(this->dt);
+
+		if (this->states.top()->getQuit()) {
+			this->states.top()->endState();
+			delete this->states.top();
+			this->states.pop();
+		}
+	}
+
+	//Quitting Game
+	else {
+		this->window->close();
+	}
 }
 
 void Game::render()
